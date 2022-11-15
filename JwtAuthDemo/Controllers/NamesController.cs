@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using JwtAuthDemo.JWT;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,15 @@ namespace JwtAuthDemo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class Names : ControllerBase
+    public class NamesController : ControllerBase
     {
+        private readonly IJWTAuthenticationManager jWTAuthenticationManager;
+
+        public NamesController(IJWTAuthenticationManager jWTAuthenticationManager)
+        {
+            this.jWTAuthenticationManager = jWTAuthenticationManager;
+        }
+
         // GET: api/<Names>
         [HttpGet]
         public IEnumerable<string> Get()
@@ -22,7 +30,11 @@ namespace JwtAuthDemo.Controllers
         [HttpPost]
         public IActionResult Authenticate([FromBody]UserCred userCred)
         {
-            return Ok();
+            var token = jWTAuthenticationManager.Authenticate(userCred.UserName, userCred.Password);
+            if (token == null)
+                return Unauthorized();
+
+            return Ok(token);
         }
     }
 }
